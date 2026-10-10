@@ -11,9 +11,23 @@
     </IfModule>
 </FilesMatch>
 
-# Front controller - route all requests through index.php
+# Front controller - route every request through index.php EXCEPT a file that
+# really exists under /assets/ or at /robots.txt, /sitemap.xml or /favicon.ico,
+# which Apache serves itself. A missing file or a bare directory there goes to
+# the router like any other path, so the application answers it (its own 404, or
+# a route that generates the file).
+#
+# The test is on the decoded path (%{REQUEST_URI}, query string excluded),
+# anchored, AND on the file existing. Never test %{THE_REQUEST} for this: it is
+# the whole raw request line, so the word "assets" anywhere in a path segment or
+# a query value ("/reports/fixed-assets", "?q=assets") would skip the rewrite and
+# get Apache's own HTML 404 instead of reaching the application.
+#
+# The two conditions joined by [OR] read: rewrite unless the path is one of the
+# static locations AND names a real file.
 RewriteEngine On
-RewriteCond %{THE_REQUEST} !(robots\.txt|sitemap\.xml|assets|favicon\.ico)
+RewriteCond %{REQUEST_URI} !^/(?:assets/.+|robots\.txt|sitemap\.xml|favicon\.ico)$ [OR]
+RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^/?(.+)/?$ index.php [NC,L,QSA]
 
 # Block direct access to .php files (except index.php)
