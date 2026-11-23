@@ -23,7 +23,7 @@ final class HomeController extends Controller
     public function index(): Response
     {
         return $this->render('home', [
-            'frameworkVersion' => InstalledVersions::getPrettyVersion('zephyrus-framework/core') ?? '',
+            'frameworkVersion' => ltrim(InstalledVersions::getPrettyVersion('zephyrus-framework/core') ?? '', 'v'),
             'phpVersion' => PHP_VERSION,
             'environment' => App::getConfiguration()?->application->environment->value ?? 'production',
             'extensions' => $this->checkExtensions(),
@@ -90,12 +90,12 @@ final class HomeController extends Controller
             }
 
             $db = Database::fromConfig($config->database);
-            $version = $db->selectValue("SELECT version()");
+            $version = $db->selectValue('SHOW server_version');
 
             return [
                 'connected' => true,
                 'message' => 'Connected',
-                'version' => is_string($version) ? $version : '',
+                'version' => is_string($version) ? explode(' ', $version)[0] : '',
             ];
         } catch (\Throwable $e) {
             $development = App::getConfiguration()?->application->environment === Environment::Development;
