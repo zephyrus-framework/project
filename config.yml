@@ -58,7 +58,7 @@ mailer:
     port: 1025
     username: ""
     password: ""
-    encryption: "none"
+    encryption: ""
   from:
     address: "noreply@localhost"
     name: "Zephyrus"
