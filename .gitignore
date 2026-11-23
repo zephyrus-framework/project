@@ -1,7 +1,11 @@
 vendor/
 .env
-cache/
-temp/
+cache/*
+!cache/latte/
+cache/latte/*
+!cache/latte/.gitkeep
+temp/*
+!temp/.gitkeep
 xdebug/
 .idea/
 .DS_Store
