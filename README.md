@@ -194,7 +194,13 @@ Every request but `GET`, `HEAD` and `OPTIONS` must carry the CSRF token, in the 
 
 ### When a Page Fails
 
-Under Docker, an error answers a bare `500 Internal Server Error`. Its message is in the output of `docker compose up` (or `docker compose logs webserver`).
+Under Docker, an error answers a bare `500 Internal Server Error`. Its message is in the output of `docker compose up` (or `docker compose logs webserver`), one long line among the request lines. To list only the lines PHP wrote:
+
+```bash
+docker compose logs webserver | grep -F '[php:'
+```
+
+An exception in your code shows as `Zephyrus: unhandled exception, answered with a 500`. A malformed `DEBUG_CLIENTS` (a secret shorter than 16 characters, a range, an `@` with no secret before it) makes every page answer 500: its line, a `PHP Fatal error`, names the entry and what is wrong with it.
 
 To see the debugger in your browser instead:
 
