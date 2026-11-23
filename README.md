@@ -1,27 +1,37 @@
-# Zephyrus — Application Template
+# Zephyrus Application Template
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-The official application template for the [Zephyrus](https://github.com/zephyrus-framework/core) PHP framework. Start a new project with a working structure — controllers, Latte views, database, sessions, mailer, and Docker — all preconfigured.
+The official application template for the [Zephyrus](https://github.com/zephyrus-framework/core) PHP framework. Start a new project with a working structure: controllers, Latte views, database, sessions, mailer, and Docker, all preconfigured.
 
 ---
 
 ## Quick Start
 
+You need Docker with Compose. Create the project one of two ways.
+
+With PHP 8.4 and Composer on your machine:
+
 ```bash
-composer create-project zephyrus-framework/framework my-app
+composer create-project zephyrus-framework/project my-app
+```
+
+With Docker only, run the same command in the Zephyrus PHP image, as your own user:
+
+```bash
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/app -w /app ghcr.io/zephyrus-framework/php:8.4-dev composer create-project zephyrus-framework/project my-app
+```
+
+Either way, Composer installs the dependencies and creates `.env` with a fresh `ENCRYPTION_KEY`. Then start it:
+
+```bash
 cd my-app
-cp .env.example .env
 docker compose up
 ```
 
-Then open [http://localhost](http://localhost).
+Then open [http://localhost:8080](http://localhost:8080).
 
-Install dependencies inside the container on first run:
-
-```bash
-docker exec -it zephyrus_webserver composer install
-```
+Port 8080 or 1080 already taken? Run `APP_PORT=8081 MAIL_PORT=1081 docker compose up`, or set `APP_PORT` and `MAIL_PORT` in `.env`.
 
 ---
 
@@ -33,6 +43,8 @@ app/
   Models/          Domain models, services, brokers
   Views/           Latte templates
     layouts/       Layout templates
+bin/
+  create-env.php   Creates .env and its ENCRYPTION_KEY
 cache/
   latte/           Compiled template cache (auto-generated)
 config.yml         Application configuration (YAML with !env tag support)
@@ -56,7 +68,9 @@ database:
   password: !env DB_PASSWORD
 ```
 
-Copy `.env.example` to `.env` and fill in your values. The example ships with working defaults for the Docker setup.
+`.env` is not committed. On a fresh clone of your project, run `composer install`, then `php bin/create-env.php`: it copies `.env.example` to `.env` and generates the key. The example ships with working defaults for the Docker setup.
+
+`security.max_body_size` (10 MB) is also set in `public/.htaccess`: change both together.
 
 ---
 
@@ -64,23 +78,32 @@ Copy `.env.example` to `.env` and fill in your values. The example ships with wo
 
 The included `docker-compose.yml` runs the official `postgres:17` image and `ghcr.io/zephyrus-framework/php:8.4-dev` (PHP 8.4 with Apache and MailCatcher), and provides:
 
-| Service | Port | Purpose |
+| Service | Address | Purpose |
 |---|---|---|
-| **PHP/Apache** | `80` | Application server (PHP 8.4) |
-| **PostgreSQL** | `5432` | Database (auto-initialized from `sql/init.sql`) |
-| **MailCatcher** | `1080` | Email testing UI (SMTP on `localhost:1025`) |
+| **PHP/Apache** | `127.0.0.1:8080` | Application server (PHP 8.4) |
+| **MailCatcher** | `127.0.0.1:1080` | Email testing UI (SMTP on `localhost:1025` inside the container) |
+| **PostgreSQL** | `database:5432` | Database (auto-initialized from `sql/init.sql`), reachable from the application only |
+
+To reach the database from a client on your machine, add a port under `database` in `docker-compose.yml`, then run `docker compose up` again:
+
+```yaml
+    ports:
+      - "127.0.0.1:5432:5432"
+```
 
 ### Common Commands
 
 ```bash
-# Start the environment
+# Start the environment (Ctrl+C stops it)
 docker compose up
 
-# Run composer inside the container
-docker exec -it zephyrus_webserver composer install
-docker exec -it zephyrus_webserver composer update
+# Run Composer inside the container, as your own user
+docker compose exec -u "$(id -u):$(id -g)" webserver composer update
 
-# Reset the database (removes volume, re-runs init.sql)
+# Open a PostgreSQL shell
+docker compose exec database psql -U dev zephyrus
+
+# Reset the database (removes its volume, re-runs init.sql)
 docker compose down -v
 docker compose up
 ```
@@ -89,14 +112,13 @@ docker compose up
 
 ## Running Without Docker
 
-If you prefer a local PHP setup:
+You need PHP 8.4+ with the `intl`, `mbstring`, `pdo_pgsql` and `sodium` extensions, and a PostgreSQL server. Set `DB_HOST` and the other `DB_` values in `.env` to reach it, then:
 
 ```bash
-composer install
-php -S localhost:8080 -t public
+php -d post_max_size=10M -d upload_max_filesize=10M -S 127.0.0.1:8080 -t public
 ```
 
-You'll need PHP 8.4+ with `mbstring`, `pdo`, `intl`, and `sodium` extensions, and a PostgreSQL (or SQLite) database configured in `.env`.
+The built-in server ignores `public/.htaccess`, so the two `-d` options set its body size limit.
 
 ---
 
@@ -105,14 +127,19 @@ You'll need PHP 8.4+ with `mbstring`, `pdo`, `intl`, and `sodium` extensions, an
 Controllers use PHP 8 attributes for routing and are auto-discovered from `app/Controllers/`:
 
 ```php
+namespace App\Controllers;
+
 use Zephyrus\Controller\Controller;
-use Zephyrus\Routing\Attribute\Get;
-use Zephyrus\Routing\Attribute\Post;
 use Zephyrus\Http\Request;
 use Zephyrus\Http\Response;
+use Zephyrus\Rendering\RenderResponses;
+use Zephyrus\Routing\Attribute\Get;
+use Zephyrus\Routing\Attribute\Post;
 
-class ProductController extends Controller
+final class ProductController extends Controller
 {
+    use RenderResponses;
+
     #[Get('/products')]
     public function index(): Response
     {
@@ -131,7 +158,16 @@ class ProductController extends Controller
 }
 ```
 
-No manual route registration needed — just create a controller in `app/Controllers/` and add route attributes.
+No manual route registration needed: create a controller in `app/Controllers/` and add route attributes.
+
+Every request but `GET`, `HEAD` and `OPTIONS` must carry the CSRF token, in the `_csrf_token` field or the `X-CSRF-Token` header, or it gets a 403. In a Latte form:
+
+```latte
+<form method="post" action="/products">
+    <input type="hidden" name="_csrf_token" value="{csrfToken()}">
+    <button>Save</button>
+</form>
+```
 
 ---
 
@@ -143,4 +179,4 @@ Full framework documentation is available on the docs site (coming soon). See th
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
