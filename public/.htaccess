@@ -1,54 +1,16 @@
-# ----------------------------- ERROR HANDLING ------------------------------ #
-php_flag html_errors on
-php_flag log_errors on
-php_flag ignore_repeated_errors on
-php_flag ignore_repeated_source on
-php_flag report_memleaks on
-php_value docref_root 0
-php_value docref_ext 0
-php_value error_reporting -1
-php_value log_errors_max_len 0
+# ------------------------------ BODY SIZE LIMIT ------------------------------ #
+# The same limit as security.max_body_size in config.yml (10 MB): change all four together.
+LimitRequestBody 10485760
+<IfModule php_module>
+    php_value post_max_size 10M
+    php_value upload_max_filesize 10M
+</IfModule>
 
-# --------------------------- LANGUAGE & CHARSET ---------------------------- #
-AddDefaultCharset UTF-8
-DefaultLanguage en
-
-# --------------------------- RESOURCE LIMITS ------------------------------- #
-php_value post_max_size 50M
-php_value upload_max_filesize 50M
-LimitRequestBody 52428800
-php_value max_execution_time 300
-php_value memory_limit 256M
-php_value max_input_time 180
-
-# --------------------------- SECURITY SETTINGS ----------------------------- #
-# Disable directory browsing and server exposition
-Options All -Indexes
-ServerSignature Off
-php_flag expose_php Off
-
-# Transmit session id only with cookie and prevent theft from client
-# scripts (XSS).
-php_flag session.use_cookies On
-php_flag session.use_only_cookies On
-php_flag session.cookie_httponly On
-php_flag session.use_trans_sid Off
-
-# Prevent remote file inclusion attacks
-php_flag allow_url_fopen Off
-php_flag allow_url_include Off
-
-# Static asset caching
+# ---------------------------- STATIC ASSET CACHING --------------------------- #
 <FilesMatch "\.(ico|pdf|flv|jpe?g|png|gif|js|css|swf|woff2?|ttf|svg)$">
+    ExpiresActive On
     ExpiresDefault "access plus 2 years"
-
-    FileETag none
-
-    <IfModule mod_headers.c>
-        Header unset ETag
-        Header unset Cookie
-        Header unset Set-Cookie
-    </IfModule>
+    FileETag None
 </FilesMatch>
 
 # Front controller - route every request through index.php EXCEPT a file that
@@ -74,29 +36,3 @@ RewriteRule ^/?(.+)/?$ index.php [NC,L,QSA]
 RewriteCond %{THE_REQUEST} ^.+?\ [^?]+\.php[?\ ]
 RewriteCond %{REQUEST_URI} !^/index\.php$
 RewriteRule ^/?.*\.php$ - [R=404]
-
-# Expiration rules
-<IfModule mod_expires.c>
-    ExpiresActive on
-    ExpiresByType image/x-icon "access plus 2 years"
-    ExpiresByType image/ico "access plus 2 years"
-    ExpiresByType image/gif "access plus 2 years"
-    ExpiresByType image/jpg "access plus 2 years"
-    ExpiresByType image/jpeg "access plus 2 years"
-    ExpiresByType image/png "access plus 2 years"
-    ExpiresByType image/svg+xml "access plus 2 years"
-    ExpiresByType font/woff2 "access plus 2 years"
-</IfModule>
-
-# Compression
-AddOutputFilterByType DEFLATE text/plain
-AddOutputFilterByType DEFLATE text/html
-AddOutputFilterByType DEFLATE text/xml
-AddOutputFilterByType DEFLATE text/css
-AddOutputFilterByType DEFLATE application/xml
-AddOutputFilterByType DEFLATE application/xhtml+xml
-AddOutputFilterByType DEFLATE application/rss+xml
-AddOutputFilterByType DEFLATE application/javascript
-AddOutputFilterByType DEFLATE application/x-javascript
-AddOutputFilterByType DEFLATE application/json
-AddOutputFilterByType DEFLATE image/svg+xml
