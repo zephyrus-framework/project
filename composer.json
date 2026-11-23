@@ -1,6 +1,6 @@
 {
-    "name": "zephyrus-framework/framework",
-    "description": "Application template for the Zephyrus PHP framework — Docker-ready with controllers, Latte views, database, sessions, and mailer preconfigured.",
+    "name": "zephyrus-framework/project",
+    "description": "Application template for the Zephyrus PHP framework: Docker-ready with controllers, Latte views, database, sessions, and mailer preconfigured.",
     "type": "project",
     "license": "MIT",
     "authors": [
@@ -9,15 +9,13 @@
             "email": "david.tucker@ophelios.com"
         }
     ],
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "require": {
         "php": "^8.4",
-        "zephyrus-framework/core": "@dev",
-        "ext-pdo": "*",
         "ext-intl": "*",
+        "ext-mbstring": "*",
+        "ext-pdo": "*",
         "ext-sodium": "*",
-        "ext-mbstring": "*"
+        "zephyrus-framework/core": "^3.18"
     },
     "require-dev": {
         "symfony/var-dumper": "*"
@@ -27,9 +25,6 @@
             "App\\Controllers\\": "app/Controllers",
             "App\\Models\\": "app/Models"
         }
-    },
-    "scripts": {
-        "test": "vendor/bin/phpunit --stderr"
     },
     "config": {
         "sort-packages": true
