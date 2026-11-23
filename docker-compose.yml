@@ -1,24 +1,24 @@
 services:
   webserver:
     image: ghcr.io/zephyrus-framework/php:8.4-dev
-    container_name: "zephyrus_webserver"
-    restart: 'always'
     ports:
-      - "80:80"
-      - "1080:1080"
-    links:
-      - database
+      - "127.0.0.1:${APP_PORT:-8080}:80"
+      - "127.0.0.1:${MAIL_PORT:-1080}:1080"
+    depends_on:
+      database:
+        condition: service_healthy
     volumes:
       - ./:/var/www/html
+    # Apache runs as www-data (uid 33), which cannot write a project owned by your user.
+    tmpfs:
+      - /var/www/html/cache/latte:uid=33,gid=33
+      - /var/www/html/temp:uid=33,gid=33
 
   database:
     image: postgres:17
-    container_name: ${DB_HOST}
-    restart: 'always'
-    ports:
-      - "5432:5432"
     volumes:
       - ./sql/init.sql:/docker-entrypoint-initdb.d/1-init.sql
+      - database:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
@@ -26,3 +26,11 @@ services:
       POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=fr-CA"
       TZ: America/Montreal
       PGTZ: America/Montreal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  database:
