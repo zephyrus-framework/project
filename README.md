@@ -75,7 +75,7 @@ docker run --rm -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD":
 docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/app -w /app ghcr.io/zephyrus-framework/php:8.4-dev php bin/create-env.php
 ```
 
-Without `.env`, `config.yml` falls back to `production` with debug off.
+The example's values are for development: on a server, set `APP_ENV=production` and `APP_DEBUG=false` in `.env`. Without `.env`, `config.yml` falls back to `production` with debug off.
 
 The body size limit (10 MB) is written in six places that must agree: `security.max_body_size` in `config.yml`; `LimitRequestBody`, `post_max_size` and `upload_max_filesize` in `public/.htaccess`; and the two `-d` options of `php -S` under Running Without Docker.
 
