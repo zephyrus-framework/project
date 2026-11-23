@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace App\Models\Core;
 
 use Dotenv\Dotenv;
-use Zephyrus\Core\App;
 use Zephyrus\Core\ApplicationBuilder;
 use Zephyrus\Core\Config\Configuration;
 use Zephyrus\Http\Request;
-use Zephyrus\Http\Response;
 use Zephyrus\Mailer\MailerConfig;
 use Zephyrus\Rendering\LatteEngine;
 use Zephyrus\Rendering\RenderConfig;
 use Zephyrus\Routing\Router;
+use Zephyrus\Security\CsrfConfig;
+use Zephyrus\Security\CsrfMiddleware;
+use Zephyrus\Security\MaxBodySizeMiddleware;
+use Zephyrus\Security\SecureHeadersMiddleware;
+use Zephyrus\Session\SessionCsrfTokenManager;
+use Zephyrus\Session\SessionManager;
+use Zephyrus\Session\SessionMiddleware;
 
 /**
  * Abstract application kernel that encapsulates the full bootstrap lifecycle.
@@ -29,6 +34,8 @@ abstract class Kernel
 {
     protected Configuration $config;
     protected LatteEngine $renderEngine;
+    protected SessionManager $session;
+    protected SessionCsrfTokenManager $csrfTokens;
 
     public function __construct()
     {
@@ -64,7 +71,12 @@ abstract class Kernel
 
         $app = $builder->build();
 
-        $request = Request::fromGlobals(trustedProxies: $this->config->security->trustedProxies);
+        $security = $this->config->security;
+        $request = Request::fromGlobals(
+            trustedProxies: $security->trustedProxies,
+            trustedHeaders: $security->trustedHeaders,
+            maxBodySize: $security->maxBodySize,
+        );
         $response = $app->handle($request);
         $response->send();
     }
@@ -94,13 +106,21 @@ abstract class Kernel
     }
 
     /**
-     * Register global and named middleware.
+     * Register global and named middleware, the first added running outermost.
      *
-     * Override to add middleware. Default is a no-op.
+     * The default mounts the secure headers, the body size limit, the session and
+     * the CSRF check. An override calls parent::registerMiddleware() first: build()
+     * refuses to boot when a security setting of config.yml has no middleware.
      */
     protected function registerMiddleware(ApplicationBuilder $builder): ApplicationBuilder
     {
-        return $builder;
+        $security = $this->config->security;
+
+        return $builder
+            ->withMiddleware(new SecureHeadersMiddleware($security->headers))
+            ->withMiddleware(new MaxBodySizeMiddleware($security->maxBodySize))
+            ->withMiddleware(new SessionMiddleware($this->config->session, $this->session))
+            ->withMiddleware(new CsrfMiddleware($this->csrfTokens, CsrfConfig::fromSecurityConfig($security)));
     }
 
     /**
@@ -115,7 +135,7 @@ abstract class Kernel
     }
 
     /**
-     * Bootstrap environment, configuration, and render engine.
+     * Bootstrap environment, configuration, session and render engine.
      */
     private function boot(): void
     {
@@ -127,8 +147,12 @@ abstract class Kernel
             'project' => ProjectConfig::class,
         ]);
 
+        $this->session = new SessionManager();
+        $this->csrfTokens = new SessionCsrfTokenManager($this->session);
+
         /** @var RenderConfig $renderConfig */
         $renderConfig = $this->config->section('render') ?? RenderConfig::fromArray([]);
         $this->renderEngine = $renderConfig->createEngine(ROOT_DIR);
+        $this->renderEngine->getLatteEngine()->addFunction('csrfToken', $this->csrfTokens->getToken(...));
     }
 }
