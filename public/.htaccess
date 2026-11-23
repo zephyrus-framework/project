@@ -1,5 +1,6 @@
 # ------------------------------ BODY SIZE LIMIT ------------------------------ #
-# The same limit as security.max_body_size in config.yml (10 MB): change all four together.
+# 10 MB, like security.max_body_size in config.yml and the two -d options of php -S in
+# README.md: these five settings must agree.
 LimitRequestBody 10485760
 <IfModule php_module>
     php_value post_max_size 10M

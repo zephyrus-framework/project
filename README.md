@@ -19,7 +19,7 @@ composer create-project zephyrus-framework/project my-app
 With Docker only, run the same command in the Zephyrus PHP image, as your own user:
 
 ```bash
-docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/app -w /app ghcr.io/zephyrus-framework/php:8.4-dev composer create-project zephyrus-framework/project my-app
+docker run --rm -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD":/app -w /app ghcr.io/zephyrus-framework/php:8.4-dev composer create-project zephyrus-framework/project my-app
 ```
 
 Either way, Composer installs the dependencies and creates `.env` with a fresh `ENCRYPTION_KEY`. Then start it:
@@ -68,9 +68,16 @@ database:
   password: !env DB_PASSWORD
 ```
 
-`.env` is not committed. On a fresh clone of your project, run `composer install`, then `php bin/create-env.php`: it copies `.env.example` to `.env` and generates the key. The example ships with working defaults for the Docker setup.
+`.env` is not committed. On a fresh clone of your project, run `composer install`, then `php bin/create-env.php`: it copies `.env.example` to `.env` and generates the key. The example ships with working defaults for the Docker setup. With Docker only:
 
-`security.max_body_size` (10 MB) is also set in `public/.htaccess`: change both together.
+```bash
+docker run --rm -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD":/app -w /app ghcr.io/zephyrus-framework/php:8.4-dev composer install
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/app -w /app ghcr.io/zephyrus-framework/php:8.4-dev php bin/create-env.php
+```
+
+Without `.env`, `config.yml` falls back to `production` with debug off.
+
+The body size limit (10 MB) is written in five places that must agree: `security.max_body_size` in `config.yml`; `LimitRequestBody`, `post_max_size` and `upload_max_filesize` in `public/.htaccess`; and the two `-d` options of `php -S` under Running Without Docker.
 
 ---
 
@@ -100,7 +107,7 @@ To reach the database from a client on your machine, add a port under `database`
 docker compose up
 
 # Run Composer inside the container, as your own user
-docker compose exec -u "$(id -u):$(id -g)" webserver composer update
+docker compose exec -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer webserver composer update
 
 # Open a PostgreSQL shell
 docker compose exec database psql -U dev zephyrus
@@ -199,7 +206,7 @@ To see the debugger in your browser instead:
 
 ## Documentation
 
-Full framework documentation is available on the docs site (coming soon). See the [core framework](https://github.com/zephyrus-framework/core) README for API details.
+The framework documentation is at [zephyrus.ophelios.com](https://zephyrus.ophelios.com). See the [core framework](https://github.com/zephyrus-framework/core) README for API details.
 
 ---
 
