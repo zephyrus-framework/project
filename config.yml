@@ -1,6 +1,6 @@
 application:
-  environment: !env APP_ENV, dev
-  debug: !env APP_DEBUG, true
+  environment: !env APP_ENV, production
+  debug: !env APP_DEBUG, false
 
 session:
   name: "ZSESSID"

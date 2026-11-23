@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use Composer\InstalledVersions;
 use Zephyrus\Controller\Controller;
+use Zephyrus\Core\App;
 use Zephyrus\Core\Config\Configuration;
 use Zephyrus\Core\Config\DatabaseConfig;
 use Zephyrus\Data\Database;
@@ -23,7 +24,7 @@ final class HomeController extends Controller
         return $this->render('home', [
             'frameworkVersion' => InstalledVersions::getPrettyVersion('zephyrus-framework/core') ?? '',
             'phpVersion' => PHP_VERSION,
-            'environment' => env('APP_ENV', 'production'),
+            'environment' => App::getConfiguration()?->application->environment->value ?? 'production',
             'extensions' => $this->checkExtensions(),
             'database' => $this->checkDatabase(),
             'formatting' => $this->formattingShowcase(),
@@ -78,7 +79,7 @@ final class HomeController extends Controller
     private function checkDatabase(): array
     {
         try {
-            $config = \Zephyrus\Core\App::getConfiguration();
+            $config = App::getConfiguration();
             if ($config === null || $config->database === null) {
                 return [
                     'connected' => false,
