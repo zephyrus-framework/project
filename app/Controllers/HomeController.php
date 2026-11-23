@@ -9,6 +9,7 @@ use Zephyrus\Controller\Controller;
 use Zephyrus\Core\App;
 use Zephyrus\Core\Config\Configuration;
 use Zephyrus\Core\Config\DatabaseConfig;
+use Zephyrus\Core\Config\Environment;
 use Zephyrus\Data\Database;
 use Zephyrus\Http\Response;
 use Zephyrus\Rendering\RenderResponses;
@@ -97,9 +98,11 @@ final class HomeController extends Controller
                 'version' => is_string($version) ? $version : '',
             ];
         } catch (\Throwable $e) {
+            $development = App::getConfiguration()?->application->environment === Environment::Development;
+
             return [
                 'connected' => false,
-                'message' => $e->getMessage(),
+                'message' => $development ? $e->getMessage() : 'Could not connect to the database.',
                 'version' => '',
             ];
         }
