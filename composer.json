@@ -26,6 +26,9 @@
             "App\\Models\\": "app/Models"
         }
     },
+    "scripts": {
+        "post-create-project-cmd": "@php bin/create-env.php"
+    },
     "config": {
         "sort-packages": true
     }
