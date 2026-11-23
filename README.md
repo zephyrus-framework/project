@@ -10,7 +10,7 @@ The official application template for the [Zephyrus](https://github.com/zephyrus
 
 You need Docker with Compose. Create the project one of two ways.
 
-With PHP 8.4 and Composer on your machine:
+With PHP 8.4 (`intl`, `mbstring` and `sodium` extensions) and Composer on your machine:
 
 ```bash
 composer create-project zephyrus-framework/project my-app
@@ -83,6 +83,8 @@ The included `docker-compose.yml` runs the official `postgres:17` image and `ghc
 | **PHP/Apache** | `127.0.0.1:8080` | Application server (PHP 8.4) |
 | **MailCatcher** | `127.0.0.1:1080` | Email testing UI (SMTP on `localhost:1025` inside the container) |
 | **PostgreSQL** | `database:5432` | Database (auto-initialized from `sql/init.sql`), reachable from the application only |
+
+Apache runs as `www-data`, which cannot write your files, so `cache/latte/` and `temp/` live in memory inside the container: they are emptied whenever it restarts.
 
 To reach the database from a client on your machine, add a port under `database` in `docker-compose.yml`, then run `docker compose up` again:
 
