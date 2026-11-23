@@ -52,7 +52,7 @@
                     </div>
                     <div class="flex items-start">
                         <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-white text-xs font-bold mr-3 mt-0.5 shrink-0">2</span>
-                        <p class="min-w-0">Add a page: a controller in <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800">app/Controllers/</code> with <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800 whitespace-nowrap">#[Get]</code> or <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800 whitespace-nowrap">#[Post]</code> attributes is discovered on its own, and its templates go in <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800">app/Views/</code>.</p>
+                        <p class="min-w-0">Add a page: put a controller with <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800 whitespace-nowrap">#[Get]</code> or <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800 whitespace-nowrap">#[Post]</code> routes in <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800">app/Controllers/</code> (discovered automatically) and its template in <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800">app/Views/</code>.</p>
                     </div>
                     <div class="flex items-start">
                         <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-white text-xs font-bold mr-3 mt-0.5 shrink-0">3</span>
@@ -70,7 +70,7 @@
             </div>
 
             {* Status *}
-            <div class="bg-white rounded-lg border border-gray-200 p-5 sm:p-6 mb-10 text-sm">
+            <div class="bg-white rounded-lg border border-gray-200 p-5 sm:p-6 mb-6 text-sm">
                 <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
                     {if $environment === 'development'}
                         <span class="inline-flex items-center px-3 py-1 rounded-full font-medium bg-amber-100 text-amber-800">Development</span>
@@ -128,7 +128,7 @@
     {* Footer *}
     <div class="border-t border-gray-200 bg-white">
         <div class="max-w-4xl mx-auto px-6 py-4 text-center text-sm text-gray-400">
-            Zephyrus Framework &middot; PHP {$phpVersion}
+            Zephyrus Framework
         </div>
     </div>
 
