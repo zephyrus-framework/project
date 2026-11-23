@@ -77,7 +77,7 @@ docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/app -w /app ghcr.io/zephyrus-f
 
 Without `.env`, `config.yml` falls back to `production` with debug off.
 
-The body size limit (10 MB) is written in five places that must agree: `security.max_body_size` in `config.yml`; `LimitRequestBody`, `post_max_size` and `upload_max_filesize` in `public/.htaccess`; and the two `-d` options of `php -S` under Running Without Docker.
+The body size limit (10 MB) is written in six places that must agree: `security.max_body_size` in `config.yml`; `LimitRequestBody`, `post_max_size` and `upload_max_filesize` in `public/.htaccess`; and the two `-d` options of `php -S` under Running Without Docker.
 
 ---
 
