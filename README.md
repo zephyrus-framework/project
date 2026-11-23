@@ -120,7 +120,7 @@ You need PHP 8.4+ with the `intl`, `mbstring`, `pdo_pgsql` and `sodium` extensio
 php -d post_max_size=10M -d upload_max_filesize=10M -S 127.0.0.1:8080 -t public
 ```
 
-The built-in server ignores `public/.htaccess`, so the two `-d` options set its body size limit.
+The built-in server ignores `public/.htaccess`, so the two `-d` options set its body size limit. Under it, the debugger shows itself to your browser while `DEBUG_CLIENTS` is unset.
 
 ---
 
@@ -128,7 +128,13 @@ The built-in server ignores `public/.htaccess`, so the two `-d` options set its 
 
 Controllers use PHP 8 attributes for routing and are auto-discovered from `app/Controllers/`:
 
+`app/Controllers/ProductController.php`:
+
 ```php
+<?php
+
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use Zephyrus\Controller\Controller;
@@ -160,16 +166,34 @@ final class ProductController extends Controller
 }
 ```
 
-No manual route registration needed: create a controller in `app/Controllers/` and add route attributes.
-
-Every request but `GET`, `HEAD` and `OPTIONS` must carry the CSRF token, in the `_csrf_token` field or the `X-CSRF-Token` header, or it gets a 403. In a Latte form:
+`app/Views/products/index.latte`, the view it renders:
 
 ```latte
+{layout '../layouts/main.latte'}
+
+{block title}Products{/block}
+
+{block content}
 <form method="post" action="/products">
     <input type="hidden" name="_csrf_token" value="{csrfToken()}">
     <button>Save</button>
 </form>
+{/block}
 ```
+
+No manual route registration needed: create a controller in `app/Controllers/` and add route attributes.
+
+Every request but `GET`, `HEAD` and `OPTIONS` must carry the CSRF token, in the `_csrf_token` field (as in the form above) or the `X-CSRF-Token` header, or it gets a 403.
+
+### When a Page Fails
+
+Under Docker, an error answers a bare `500 Internal Server Error`. Its message is in the output of `docker compose up` (or `docker compose logs webserver`).
+
+To see the debugger in your browser instead:
+
+1. Find the address your browser comes from: it starts each request line of that output, like `172.23.0.1` in `webserver-1  | 172.23.0.1 - - [...] "GET / HTTP/1.1" 200`. It can change after `docker compose down`.
+2. Make a secret with `docker compose exec webserver php -r 'echo bin2hex(random_bytes(16)), "\n";'`.
+3. Set `DEBUG_CLIENTS=<secret>@<address>` in `.env`. In the browser console, run `document.cookie = "tracy-debug=<secret>; path=/"`, then reload the page.
 
 ---
 

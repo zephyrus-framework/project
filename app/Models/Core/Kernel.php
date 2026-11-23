@@ -52,8 +52,10 @@ abstract class Kernel
     {
         $router = $this->registerControllers(new Router());
 
+        // DEBUG_CLIENTS in .env names the browsers that see the debugger; unset, none does under Apache.
         $builder = ApplicationBuilder::create()
             ->withConfiguration($this->config, basePath: ROOT_DIR)
+            ->withDebugClientAllowlist(env('DEBUG_CLIENTS'))
             ->withRouter($router);
 
         $builder = $this->configureErrorHandlers($builder);
