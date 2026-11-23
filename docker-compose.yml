@@ -1,22 +1,18 @@
 services:
   webserver:
-    build:
-      context: "./docker/services/php"
+    image: ghcr.io/zephyrus-framework/php:8.4-dev
     container_name: "zephyrus_webserver"
     restart: 'always'
     ports:
       - "80:80"
-      - "443:443"
       - "1080:1080"
     links:
       - database
     volumes:
       - ./:/var/www/html
-      - ../zephyrus2:/var/www/zephyrus2
 
   database:
-    build:
-      context: "./docker/services/postgres"
+    image: postgres:17
     container_name: ${DB_HOST}
     restart: 'always'
     ports:
@@ -27,3 +23,6 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=fr-CA"
+      TZ: America/Montreal
+      PGTZ: America/Montreal

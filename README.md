@@ -36,7 +36,6 @@ app/
 cache/
   latte/           Compiled template cache (auto-generated)
 config.yml         Application configuration (YAML with !env tag support)
-docker/            Docker service definitions
 locale/            Translation files (JSON)
 public/            Web root (Apache document root)
   index.php        Application entry point
@@ -63,11 +62,11 @@ Copy `.env.example` to `.env` and fill in your values. The example ships with wo
 
 ## Docker Environment
 
-The included `docker-compose.yml` provides:
+The included `docker-compose.yml` runs the official `postgres:17` image and `ghcr.io/zephyrus-framework/php:8.4-dev` (PHP 8.4 with Apache and MailCatcher), and provides:
 
 | Service | Port | Purpose |
 |---|---|---|
-| **PHP/Apache** | `80`, `443` | Application server (PHP 8.4) |
+| **PHP/Apache** | `80` | Application server (PHP 8.4) |
 | **PostgreSQL** | `5432` | Database (auto-initialized from `sql/init.sql`) |
 | **MailCatcher** | `1080` | Email testing UI (SMTP on `localhost:1025`) |
 
