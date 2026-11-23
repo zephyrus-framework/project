@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use Composer\InstalledVersions;
 use Zephyrus\Controller\Controller;
 use Zephyrus\Core\Config\Configuration;
 use Zephyrus\Core\Config\DatabaseConfig;
-use Zephyrus\Core\Kernel;
 use Zephyrus\Data\Database;
 use Zephyrus\Http\Response;
 use Zephyrus\Rendering\RenderResponses;
@@ -21,7 +21,7 @@ final class HomeController extends Controller
     public function index(): Response
     {
         return $this->render('home', [
-            'frameworkVersion' => (new Kernel())->version(),
+            'frameworkVersion' => InstalledVersions::getPrettyVersion('zephyrus-framework/core') ?? '',
             'phpVersion' => PHP_VERSION,
             'environment' => env('APP_ENV', 'production'),
             'extensions' => $this->checkExtensions(),
