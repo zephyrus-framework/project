@@ -32,7 +32,7 @@ RewriteCond %{REQUEST_URI} !^/(?:assets/.+|robots\.txt|sitemap\.xml|favicon\.ico
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^/?(.+)/?$ index.php [NC,L,QSA]
 
-# Block direct access to .php files (except index.php)
-RewriteCond %{THE_REQUEST} ^.+?\ [^?]+\.php[?\ ]
-RewriteCond %{REQUEST_URI} !^/index\.php$
-RewriteRule ^/?.*\.php$ - [R=404]
+# PHP runs only through index.php: a script under assets/ answers 404, whatever
+# path info or percent-encoding the request adds.
+RewriteCond %{REQUEST_FILENAME} \.ph(?:ar|p|tml)$ [NC]
+RewriteRule ^assets/ - [R=404,L]
