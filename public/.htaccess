@@ -7,10 +7,10 @@ LimitRequestBody 10485760
 </IfModule>
 
 # ---------------------------- STATIC ASSET CACHING --------------------------- #
+# Browsers revalidate each file, so an edit shows at once. An application whose
+# file names carry a content hash can serve them with a long max-age instead.
 <FilesMatch "\.(ico|pdf|flv|jpe?g|png|gif|js|css|swf|woff2?|ttf|svg)$">
-    ExpiresActive On
-    ExpiresDefault "access plus 2 years"
-    FileETag None
+    Header set Cache-Control "no-cache"
 </FilesMatch>
 
 # Front controller - route every request through index.php EXCEPT a file that
