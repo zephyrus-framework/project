@@ -1,0 +1,9 @@
+/* Source of public/assets/css/app.css: rebuild it after changing classes (see "Styles" in README.md). */
+@import "tailwindcss" source(none);
+@source "../../app/Views";
+
+@layer base {
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+}

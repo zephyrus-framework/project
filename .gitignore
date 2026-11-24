@@ -11,3 +11,4 @@ temp/*
 xdebug/
 .idea/
 .DS_Store
+/bin/tailwindcss
