@@ -60,13 +60,15 @@ temp/              Temporary files
 
 ### Styles
 
-The views use [Tailwind CSS](https://tailwindcss.com) through `public/assets/css/app.css`, a committed build of `resources/css/app.css` that holds only the classes found in `app/Views/`. After changing classes, rebuild it with the standalone Tailwind CLI v4.3.5 (no Node.js needed). Download it once into `bin/`, where Git ignores it; on macOS or an ARM machine, replace `linux-x64` with `macos-arm64`, `macos-x64` or `linux-arm64`:
+The views use [Tailwind CSS](https://tailwindcss.com) through `public/assets/css/app.css`, a committed build of `resources/css/app.css` that holds only the classes found in `app/Views/`. After changing classes, rebuild it with the standalone Tailwind CLI v4.3.5 (no Node.js needed). Download it once into `bin/`, where Git ignores it; on macOS or an ARM machine, replace `linux-x64` with `macos-arm64`, `macos-x64` or `linux-arm64`; on Windows, run these commands in WSL:
 
 ```bash
 curl -fsSLo bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.5/tailwindcss-linux-x64
 chmod +x bin/tailwindcss
 bin/tailwindcss -i resources/css/app.css -o public/assets/css/app.css --minify
 ```
+
+While you edit views, add `--watch` to the last command: it rebuilds the stylesheet on every save.
 
 ---
 
